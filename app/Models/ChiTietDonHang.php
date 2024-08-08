@@ -14,14 +14,14 @@ class ChiTietDonHang extends Model
         'san_pham_id',
         'don_gia',
         'so_luong',
-        'thanh_tien',
+        'thanh_tien'
     ];
 
-    public function donHang(){
+    public function donHang() {
         return $this->belongsTo(DonHang::class);
     }
 
-    public function sanPham(){
-        return $this->belongsTo(sanPham::class);
+    public function sanPham() {
+        return $this->belongsTo(SanPham::class);
     }
 }

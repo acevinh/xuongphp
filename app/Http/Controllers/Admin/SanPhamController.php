@@ -15,23 +15,11 @@ class SanPhamController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
-        // Lấy dữ liệu từ form search
-        $search = $request->input('search');
-        $searchTrangThai = $request->input('searchTrangThai');
-
         $title = "Thông tin sản phẩm";
 
-        $listSanPham = SanPham::orderByDesc('is_type')
-        ->when($search, function ($query, $search) {
-            return $query->where('ma_san_pham', 'like', "%{$search}%")
-                        ->orWhere('ten_san_pham', 'like', "%{$search}%");
-        })
-        ->when($searchTrangThai !== null, function ($query) use ($searchTrangThai) {
-            return $query->where('is_type', '=', $searchTrangThai);
-        })
-        ->paginate(3);
+        $listSanPham = SanPham::orderByDesc('is_type')->get();
 
         return view('admins.sanphams.index', compact('title', 'listSanPham'));
     }
@@ -53,7 +41,7 @@ class SanPhamController extends Controller
      */
     public function store(SanPhamRequest $request)
     {
-        if($request->isMethod('POST')){
+        if ($request->isMethod('POST')) {
             $params = $request->except('_token');
 
             // Chuyển đổi giá trị checkbox thành boolean
@@ -62,30 +50,30 @@ class SanPhamController extends Controller
             $params['is_hot_deal'] = $request->has('is_hot_deal') ? 1 : 0;
             $params['is_show_home'] = $request->has('is_show_home') ? 1 : 0;
 
-            // Xử lý hình ảnh
-            if($request->hasFile('hinh_anh')){
-                $params['hinh_anh'] = $request->file('hinh_anh')->store('uploads/sanphams', 'public');
-            }else{
+            // Xử lý hình ảnh đại diện
+            if ($request->hasFile('hinh_anh')) {
+                $params['hinh_anh'] = $request->file('hinh_anh')->store('uploads/sanpham', 'public');
+            } else {
                 $params['hinh_anh'] = null;
             }
 
             // Thêm sản phẩm
             $sanPham = SanPham::query()->create($params);
 
-            // Lấy id sản phẩm vừa thêm để thêm được album
+            // Lấy id sản phẩm vừa thêm để thêm đc album
             $sanPhamID = $sanPham->id;
 
             // Xử lý thêm album
-            if($request->hasFile('list_hinh_anh')){
-                foreach($request->file('list_hinh_anh') as $image){
-                    if($image){
-                        $path = $image->store('uploads/hinhanhsanphams/id_'. $sanPhamID, 'public');
-                        $sanPham->hinhAnhSanPham()->create([        
+            if ($request->hasFile('list_hinh_anh')) {
+                foreach ($request->file('list_hinh_anh') as $image) {
+                    if ($image) {
+                        $path = $image->store('uploads/hinhanhsanpham/id_' . $sanPhamID, 'public');
+                        $sanPham->hinhAnhSanPham()->create([
                             'san_pham_id' => $sanPhamID,
-                            'hinh_anh' => $path,          
+                            'hinh_anh' => $path,
                         ]);
                     }
-                }   
+                }
             }
 
             return redirect()->route('admins.sanphams.index')->with('success', 'Thêm sản phẩm thành công');
@@ -119,7 +107,7 @@ class SanPhamController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        if($request->isMethod('PUT')){
+        if ($request->isMethod('PUT')) {
             $params = $request->except('_token', '_method');
 
             // Chuyển đổi giá trị checkbox thành boolean
@@ -130,63 +118,61 @@ class SanPhamController extends Controller
 
             $sanPham = SanPham::query()->findOrFail($id);
 
-            // Xử lý hình ảnh
-            if($request->hasFile('hinh_anh')){
-                if($sanPham->hinh_anh && Storage::disk('public')->exists($sanPham->hinh_anh)){
+            // Xử lý hình ảnh đại diện
+            if ($request->hasFile('hinh_anh')) {
+                if ($sanPham->hinh_anh && Storage::disk('public')->exists($sanPham->hinh_anh)) {
                     Storage::disk('public')->delete($sanPham->hinh_anh);
                 }
-                $params['hinh_anh'] = $request->file('hinh_anh')->store('uploads/sanphams', 'public');
-            }else{
+                $params['hinh_anh'] = $request->file('hinh_anh')->store('uploads/sanpham', 'public');
+            } else {
                 $params['hinh_anh'] = $sanPham->hinh_anh;
             }
 
-            // Xử lý album
-                $currentImages = $sanPham->hinhAnhSanPham->pluck('id')->toArray();
-                $arrayCombine = array_combine($currentImages, $currentImages);
+            // Xử lý Album
 
-
-                // Trường hợp xóa ảnh
-                foreach($arrayCombine as $key => $value){
-                    // Tìm kiếm id hình ảnh trong mảng hình ảnh mới đẩy lên
-                    // Nếu không tồn tại ID thì tức là người dùng đã xóa hình ảnh đó
-                    if(!array_key_exists($key, $request->list_hinh_anh)){
-                        $hinhAnhSanPham = HinhAnhSanPham::query()->find($key);
-
-                        // Xóa hình ảnh
-                        if($hinhAnhSanPham && Storage::disk('public')->exists($hinhAnhSanPham ->hinh_anh)){
-                            Storage::disk('public')->delete($hinhAnhSanPham ->hinh_anh);
-
-                            $hinhAnhSanPham->delete(); 
-                        }
+            $currentImages = $sanPham->hinhAnhSanPham->pluck('id')->toArray();
+            $arrayCombine = array_combine($currentImages, $currentImages);
+            // Trường hợp xóa ảnh
+            foreach ($arrayCombine as $key => $value) {
+                // Tìm kiếm id hình trong mảng hình ảnh mới đẩy lên
+                // Nếu ko tồn tại ID thì tức là người dùng đã xóa hình ảnh đó
+                if (!array_key_exists($key, $request->list_hinh_anh)) {
+                    $hinhAnhSanPham = HinhAnhSanPham::query()->find($key);
+                    // Xóa hình ảnh
+                    if ($hinhAnhSanPham && Storage::disk('public')->exists($hinhAnhSanPham->hinh_anh)) {
+                        Storage::disk('public')->delete($hinhAnhSanPham->hinh_anh);
+                        $hinhAnhSanPham->delete();
                     }
                 }
-
+            }
+            if ($request->hasFile('list_hinh_anh')) {
                 // Trường hợp thêm hoặc sửa
-                foreach($request->list_hinh_anh as $key => $image){
-                    if(!array_key_exists($key, $arrayCombine)){
-                        if($request->hasFile("list_hinh_anh.$key")){
-                            $path = $image->store('uploads/hinhanhsanphams/id_'. $id, 'public');
+                foreach ($request->list_hinh_anh as $key => $image) {
+                    if (!array_key_exists($key, $arrayCombine)) {
+                        if ($request->hasFile("list_hinh_anh.$key")) {
+                            $path = $image->store('uploads/hinhanhsanpham/id_' . $id, 'public');
                             $sanPham->hinhAnhSanPham()->create([
                                 'san_pham_id' => $id,
-                                'hinh_anh' => $path,    
-                            ]);                      
+                                'hinh_anh' => $path,
+                            ]);
                         }
-                    }else if(is_file($image) && $request->hasFile("list_hinh_anh.$key")){
+                    } else if (is_file($image) && $request->hasFile("list_hinh_anh.$key")) {
                         // Trường hợp thay đổi hình ảnh
                         $hinhAnhSanPham = HinhAnhSanPham::query()->find($key);
-                        if($hinhAnhSanPham && Storage::disk('public')->exists($hinhAnhSanPham ->hinh_anh)){
-                            Storage::disk('public')->delete($hinhAnhSanPham ->hinh_anh);
+                        if ($hinhAnhSanPham && Storage::disk('public')->exists($hinhAnhSanPham->hinh_anh)) {
+                            Storage::disk('public')->delete($hinhAnhSanPham->hinh_anh);
                         }
-                        $path = $image->store('uploads/hinhanhsanphams/id_'. $id, 'public');
+                        $path = $image->store('uploads/hinhanhsanpham/id_' . $id, 'public');
                         $hinhAnhSanPham->update([
-                            'hinh_anh' => $path,    
+                            'hinh_anh' => $path,
                         ]);
                     }
                 }
+            }
 
             $sanPham->update($params);
 
-            return redirect()->route('admins.sanphams.index')->with('success', 'Cập nhật sản phẩm thành công');
+            return redirect()->route('admins.sanphams.index')->with('success', 'Cập nhật thông tin sản phẩm thành công');
         }
     }
 
@@ -196,22 +182,22 @@ class SanPhamController extends Controller
     public function destroy(string $id)
     {
         $sanPham = SanPham::query()->findOrFail($id);
-        
+
         // Xóa hình ảnh đại diện của sản phẩm
-        if($sanPham->hinh_anh && Storage::disk('public')->exists($sanPham->hinh_anh)){
+        if ($sanPham->hinh_anh && Storage::disk('public')->exists($sanPham->hinh_anh)) {
             Storage::disk('public')->delete($sanPham->hinh_anh);
         }
 
         // Xóa album
         $sanPham->hinhAnhSanPham()->delete();
 
-        // Xóa toàn bộ hình ảnh trong thi mục
-        $path = 'uploads/hinhanhsanphams/id_' . $id;
-        if(Storage::disk('public')->exists($path)){
+        // Xóa toàn bộ hình ảnh trong thư mục
+        $path = 'uploads/hinhanhsanpham/id_' . $id;
+        if (Storage::disk('public')->exists($path)) {
             Storage::disk('public')->deleteDirectory($path);
         }
 
-        // Xóa sản phẩm
+        // Xóa sản phầm
         $sanPham->delete();
 
         return redirect()->route('admins.sanphams.index')->with('success', 'Xóa sản phẩm thành công');

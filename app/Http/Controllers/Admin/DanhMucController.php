@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\DanhMucRequest;
 use App\Models\DanhMuc;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\DanhMucRequest;
 use Illuminate\Support\Facades\Storage;
 
 class DanhMucController extends Controller
@@ -13,11 +14,12 @@ class DanhMucController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
     {
         $title = "Danh mục sản phẩm";
 
-        $listDanhMuc = DanhMuc::orderByDesc('trang_thai')->paginate(3);
+        $listDanhMuc = DanhMuc::orderByDesc('trang_thai')->get();
+        // $listDanhMuc = DB::tablde('danh_mucs')->orderByDesc('trang_thai')->get();
 
         return view('admins.danhmucs.index', compact('title', 'listDanhMuc'));
     }
@@ -37,16 +39,15 @@ class DanhMucController extends Controller
      */
     public function store(DanhMucRequest $request)
     {
-        if($request->isMethod('POST')){
+        if ($request->isMethod('POST')) {
             $param = $request->except('_token');
 
-            if($request->has('hinh_anh')){
-                $filename = $request->file('hinh_anh')->store('uploads/danhmucs', 'public');
-            }else{
-                $filename = null;
+            if ($request->hasFile('hinh_anh')) {
+                $filepath = $request->file('hinh_anh')->store('uploads/danhmucs', 'public');
+            } else {
+                $filepath = null;
             }
-
-            $param['hinh_anh'] = $filename;
+            $param['hinh_anh'] = $filepath;
 
             DanhMuc::create($param);
 
@@ -67,7 +68,7 @@ class DanhMucController extends Controller
      */
     public function edit(string $id)
     {
-        $title = "Sửa danh mục sản phẩm";
+        $title = "Chỉnh sửa danh mục sản phẩm";
 
         $danhMuc = DanhMuc::findOrFail($id);
 
@@ -79,21 +80,20 @@ class DanhMucController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        if($request->isMethod('PUT')){
+        if ($request->isMethod('PUT')) {
             $param = $request->except('_token', '_method');
 
             $danhMuc = DanhMuc::findOrFail($id);
 
-            if($request->has('hinh_anh')){
-                if($danhMuc->hinh_anh && Storage::disk('public')->exists($danhMuc->hinh_anh)){
+            if ($request->hasFile('hinh_anh')) {
+                if ($danhMuc->hinh_anh && Storage::disk('public')->exists($danhMuc->hinh_anh)) {
                     Storage::disk('public')->delete($danhMuc->hinh_anh);
                 }
-                $filename = $request->file('hinh_anh')->store('uploads/danhmucs', 'public');
-            }else{
-                $filename = $danhMuc->hinh_anh;
+                $filepath = $request->file('hinh_anh')->store('uploads/danhmucs', 'public');
+            } else {
+                $filepath = $danhMuc->hinh_anh;
             }
-
-            $param['hinh_anh'] = $filename;
+            $param['hinh_anh'] = $filepath;
 
             $danhMuc->update($param);
 
@@ -108,13 +108,12 @@ class DanhMucController extends Controller
     {
         $danhMuc = DanhMuc::findOrFail($id);
 
-        $danhMuc->delete($id);
+        $danhMuc->delete();
 
-        if($danhMuc->hinh_anh && Storage::disk('public')->exists($danhMuc->hinh_anh)){
+        if ($danhMuc->hinh_anh && Storage::disk('public')->exists($danhMuc->hinh_anh)) {
             Storage::disk('public')->delete($danhMuc->hinh_anh);
         }
 
         return redirect()->route('admins.danhmucs.index')->with('success', 'Xóa danh mục thành công');
-       
     }
 }

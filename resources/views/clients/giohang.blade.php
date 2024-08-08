@@ -2,9 +2,9 @@
 
 @section('css')
     <style>
-        .tab-one{
-            img{
-                max-width: 30px;
+        .tab-one {
+            img {
+                max-width: 250px;
             }
         }
     </style>
@@ -36,10 +36,9 @@
         <div class="container">
             <div class="section-bg-color">
 
-                {{-- Hiển thị thông báo thành công --}}
                 @if (session('error'))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ (session('error')) }}
+                        {{ session('error') }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
@@ -47,7 +46,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <form action="{{ route('cart.update') }}" method="POST">
-                            @csrf              
+                            @csrf
                             <!-- Cart Table Area -->
                             <div class="cart-table table-responsive">
                                 <table class="table table-bordered">
@@ -65,39 +64,47 @@
                                         @foreach ($cart as $key => $item)
                                             <tr>
                                                 <td class="pro-thumbnail">
-                                                    <a href="#"><img class="img-fluid" src="{{ Storage::url($item['hinh_anh']) }}" alt="Product" /></a>
-                                                    <input type="hidden" name="cart[{{ $key }}][hinh_anh]" value="{{ $item['hinh_anh'] }}">
+                                                    <a href="#">
+                                                        <img class="img-fluid" src="{{ Storage::url($item['hinh_anh']) }}"
+                                                            alt="Product" />
+                                                        <input type="hidden" name="cart[{{ $key }}][hinh_anh]"
+                                                            value="{{ $item['hinh_anh'] }}">
+                                                    </a>
                                                 </td>
                                                 <td class="pro-title">
-                                                    <a href="{{ route('products.detail', $key) }}">{{ $item['ten_san_pham'] }}</a>
-                                                    <input type="hidden" name="cart[{{ $key }}][ten_san_pham]" value="{{ $item['ten_san_pham'] }}">
+                                                    <a href="{{ route('products.detail', $key) }}">
+                                                        {{ $item['ten_san_pham'] }}
+                                                    </a>
+                                                    <input type="hidden" name="cart[{{ $key }}][ten_san_pham]"
+                                                        value="{{ $item['ten_san_pham'] }}">
                                                 </td>
                                                 <td class="pro-price">
                                                     <span>{{ number_format($item['gia'], 0, '', '.') }} đ</span>
-                                                    <input type="hidden" name="cart[{{ $key }}][gia]" value="{{ $item['gia'] }}">
+                                                    <input type="hidden" name="cart[{{ $key }}][gia]"
+                                                        value="{{ $item['gia'] }}">
                                                 </td>
                                                 <td class="pro-quantity">
                                                     <div class="pro-qty">
-                                                        <input type="text" class="quantityInput" data-price="{{ $item['gia'] }}" value="{{ $item['so_luong'] }}" name="cart[{{ $key }}][so_luong]">
+                                                        <input type="text" class="quantityInput"
+                                                            data-price="{{ $item['gia'] }}"
+                                                            value="{{ $item['so_luong'] }}"
+                                                            name="cart[{{ $key }}][so_luong]">
                                                     </div>
                                                 </td>
                                                 <td class="pro-subtotal">
-                                                    <span class="subTotal">{{ number_format($item['gia'] * $item['so_luong'], 0, '', '.') }} đ</span>
+                                                    <span class="subtotal">
+                                                        {{ number_format($item['gia'] * $item['so_luong'], 0, '', '.') }} đ
+                                                    </span>
                                                 </td>
-                                                <td class="pro-remove"><a href="#"><i class="fa fa-trash-o"></i></a></td>
-                                            </tr>  
-                                        @endforeach                                              
+                                                <td class="pro-remove"><a href="#"><i class="fa fa-trash-o"></i></a>
+                                                </td>
+                                            </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
                             <!-- Cart Update Option -->
-                            <div class="cart-update-option d-block d-md-flex justify-content-between">
-                                <div class="apply-coupon-wrapper">
-                                    <form action="#" method="post" class=" d-block d-md-flex">
-                                        <input type="text" placeholder="Enter Your Coupon Code" />
-                                        <button class="btn btn-sqr">Apply Coupon</button>
-                                    </form>
-                                </div>
+                            <div class="cart-update-option d-block d-md-flex justify-content-end">
                                 <div class="cart-update">
                                     <button type="submit" class="btn btn-sqr">Update Cart</button>
                                 </div>
@@ -144,11 +151,10 @@
         $('.pro-qty').append('<span class="inc qtybtn">+</span>');
 
         // Hàm cập nhật tổng giỏ hàng
-        function updateTotal(){
+        function updateTotal() {
             var subTotal = 0;
-
             // Tính tổng số tiền của các sản phẩm có trong giỏ hàng
-            $('.quantityInput').each(function(){
+            $('.quantityInput').each(function() {
                 var $input = $(this);
                 var price = parseFloat($input.data('price'));
                 var quantity = parseFloat($input.val());
@@ -156,7 +162,7 @@
             })
 
             // Lấy số tiền vận chuyển
-            var shipping = parseFloat($('.shipping').text().replace(/\./g,'').replace(' đ', ''));
+            var shipping = parseFloat($('.shipping').text().replace(/\./g, '').replace(' đ', ''))
             var total = subTotal + shipping;
 
             // Cập nhật giá trị
@@ -164,51 +170,53 @@
             $('.total-amount').text(total.toLocaleString('vi-VN') + ' đ');
         }
 
-        $('.qtybtn').on('click', function () {
+        $('.qtybtn').on('click', function() {
             var $button = $(this);
             var $input = $button.parent().find('input')
             var oldValue = parseFloat($input.val());
 
-            if($button.hasClass('inc')){
-                var newValue = oldValue + 1;
-            }else{
-                if(oldValue > 1){
-                    var newValue = oldValue - 1;
-                }else{
-                    var newValue = 1;
+            if ($button.hasClass('inc')) {
+                var newVal = oldValue + 1;
+            } else {
+                if (oldValue > 1) {
+                    var newVal = oldValue - 1;
+                } else {
+                    var newVal = 1;
                 }
             }
-            $input.val(newValue);
+            $input.val(newVal);
 
-            // Cập nhật lại giá trị của subTotal
+            // Cập nhật lại giá trị của subtotal
             var price = parseFloat($input.data('price'));
-            var subTotalElement = $input.closest('tr').find('.subTotal');
-            var newSubTotal = newValue * price;
+            var subtotalElement = $input.closest('tr').find('.subtotal');
+            var newSubtotal = newVal * price;
 
-            subTotalElement.text(newSubTotal.toLocaleString('vi-VN') + ' đ');   
+            subtotalElement.text(newSubtotal.toLocaleString('vi-VN') + ' đ')
 
-            updateTotal();       
+            updateTotal();
+
         });
 
         // Xử lý nếu người dùng nhập số âm
-        $('.quantityInput').on('change', function(){
+        $('.quantityInput').on('change', function() {
             var value = parseInt($(this).val(), 10);
 
-            if(isNaN(value) || value < 1){
-                alert('Số lượng phải hơn bằng 1')
-                $(this).val(1);
+            if (isNaN(value) || value < 1) {
+                alert('Số lượng phải lớn hơn bằng 1.')
+                $(this).val(1)
             }
             updateTotal();
         })
 
         // Xử lý xóa sản phẩm trong giỏ hàng
-        $('.pro-remove').on('click', function(){
-            event.preventDefault(); // Chặn thao tác của thẻ a
+        $('.pro-remove').on('click', function() {
+            event.preventDefault(); // Chặn thao tác mặc định của thẻ a
             var $row = $(this).closest('tr');
-            $row.remove();
+            $row.remove(); // Xóa hàng
 
             updateTotal();
         })
+
         updateTotal();
     </script>
 @endsection

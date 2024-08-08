@@ -9,50 +9,45 @@ use Illuminate\Support\Facades\Auth;
 class AuthController extends Controller
 {
     // Đăng nhập
-    public function showFormLogin(){
+    public function showFormLogin() {
         return view('auth.login');
     }
 
-    public function login(Request $request){
+    public function login(Request $request) {
         $user = $request->validate([
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'password' => ['required', 'string']
+            'email' => 'required|string|email|max:255', 
+            'password' => 'required|string'
         ]);
-        // dd($user);
 
-        if(Auth::attempt($user)){
-            // return redirect()->intended('home');
-            return redirect()->route('trangchu');
+        if (Auth::attempt($user)) {
+            return redirect()->intended('home');
         }
 
         return redirect()->back()->withErrors([
-            'email' => 'Thong tin nguoi dung khong dung'
+            'email' => 'Thông tin người dùng không đúng'
         ]);
     }
-
-    // Đăng ký
-    public function showFormRegister(){
+    // Đằng ký
+    public function showFormRegister() {
         return view('auth.register');
     }
 
-    public function register(Request $request){
+    public function register(Request $request) {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'password' => ['required', 'string', 'min:8']
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255',
+            'password' => 'required|string|min:8',
         ]);
-        // dd($data);
 
         $user = User::query()->create($data);
 
         Auth::login($user);
 
-        // return redirect()->intended('home');
-        return redirect()->route('trangchu');
+        return redirect()->intended('home');
     }
 
     // Đăng xuất
-    public function logout(Request $request){
+    public function logout(Request $request) {
         Auth::logout();
         return redirect('/login');
     }

@@ -29,18 +29,20 @@ class SanPham extends Model
     ];
 
     protected $casts = [
-        'is_type' => 'boolean',
-        'is_new' => 'boolean',
-        'is_hot' => 'boolean',
-        'is_hot_deal' => 'boolean',
-        'is_show_home' => 'boolean',
+        'is_type'  => 'boolean',
+        'is_new'  => 'boolean',
+        'is_hot'  => 'boolean',
+        'is_hot_deal'  => 'boolean',
+        'is_show_home'  => 'boolean',
     ];
 
-    public function danhMuc(){
+    public function danhMuc()
+    {
         return $this->belongsTo(DanhMuc::class);
     }
 
-    public function hinhAnhSanPham(){
+    public function hinhAnhSanPham()
+    {
         return $this->hasMany(HinhAnhSanPham::class);
     }
 }

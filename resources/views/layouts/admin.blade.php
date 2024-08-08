@@ -30,9 +30,10 @@
         <!-- Begin page -->
         <div id="app-layout">
 
-            @include('admins.block.header')
 
-            @include('admins.block.sidebar')
+            @include('admins.blocks.header')
+
+            @include('admins.blocks.sidebar')
 
             <!-- ============================================================== -->
             <!-- Start Page Content here -->
@@ -41,7 +42,7 @@
             <div class="content-page">
                 @yield('content')
 
-                @include('admins.block.footer')
+                @include('admins.blocks.footer')
                 
             </div>
             <!-- ============================================================== -->
@@ -70,7 +71,6 @@
 
         <!-- App js-->
         <script src="{{ asset('assets/admin/js/app.js') }}"></script>
-        
     </body>
 
 <!-- Mirrored from zoyothemes.com/tapeli/html/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 16 Jul 2024 08:34:03 GMT -->

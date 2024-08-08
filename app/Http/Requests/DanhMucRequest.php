@@ -27,14 +27,14 @@ class DanhMucRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Get the error messages for the defined validation rules.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, string>
      */
     public function messages(): array
     {
         return [
-            'ten_danh_muc.required' => 'Tên danh mục bắt buộc phải điền',
+            'ten_danh_muc.required' => 'Tên danh mục là bắt buộc.',
             'ten_danh_muc.max' => 'Tên danh mục không được quá 255 ký tự',
         ];
     }

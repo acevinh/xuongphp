@@ -11,10 +11,11 @@ class HinhAnhSanPham extends Model
 
     protected $fillable = [
         'san_pham_id',
-        'hinh_anh',
+        'hinh_anh'
     ];
 
-    public function sanPham(){
+    public function sanPham()
+    {
         return $this->belongsTo(SanPham::class);
     }
 }

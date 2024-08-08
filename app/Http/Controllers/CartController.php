@@ -7,15 +7,15 @@ use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    public function listCart(){
-
+    public function listCart()
+    {
         // session()->put('cart', []);
         $cart = session()->get('cart', []);
 
         $total = 0;
         $subTotal = 0;
 
-        foreach($cart as $item){
+        foreach ($cart as $item) {
             $subTotal += $item['gia'] * $item['so_luong'];
         }
 
@@ -26,7 +26,8 @@ class CartController extends Controller
         return view('clients.giohang', compact('cart', 'subTotal', 'shipping', 'total'));
     }
 
-    public function addCart(Request $request){
+    public function addCart(Request $request)
+    {
         $productId = $request->input('product_id');
         $quantity = $request->input('quantity');
 
@@ -35,10 +36,10 @@ class CartController extends Controller
         // Khởi tạo 1 mảng chứa thông tin giỏ hàng trên session
         $cart = session()->get('cart', []);
 
-        if(isset($cart[$productId])){
+        if (isset($cart[$productId])) {
             // Sản phẩm đã tồn tại trong giỏ hàng
             $cart[$productId]['so_luong'] += $quantity;
-        }else{
+        } else {
             // Sản phẩm chưa có trong giỏ hàng
             $cart[$productId] = [
                 'ten_san_pham' => $sanPham->ten_san_pham,
@@ -47,13 +48,13 @@ class CartController extends Controller
                 'hinh_anh' => $sanPham->hinh_anh,
             ];
         }
-
         session()->put('cart', $cart);
 
-        return redirect()->route('cart.list');
+        return redirect()->back();
     }
 
-    public function updateCart(Request $request){
+    public function updateCart(Request $request)
+    {
         $cartNew = $request->input('cart', []);
 
         session()->put('cart', $cartNew);

@@ -27,9 +27,10 @@ class OrderConfirm extends Mailable
     /**
      * Build the message.
      */
-    public function build(){
-       return $this->subject('Xác nhận đơn hàng')
-       ->markdown('clients.donhangs.mail')
-       ->with('donHang', $this->donHang); 
+    public function build()
+    {
+        return $this->subject('Xác nhận đơn hàng')
+            ->markdown('clients.donhangs.mail')
+            ->with('donHang', $this->donHang);
     }
 }

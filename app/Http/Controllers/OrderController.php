@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Requests\OrderRequest;
 use App\Mail\OrderConfirm;
 use App\Models\DonHang;
-use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
@@ -35,16 +34,16 @@ class OrderController extends Controller
     public function create()
     {
         $carts = session()->get('cart', []);
-        if(!empty($carts)){
+        if (!empty($carts)) {
             $total = 0;
             $subTotal = 0;
 
-            foreach($carts as $item){
+            foreach ($carts as $item) {
                 $subTotal += $item['gia'] * $item['so_luong'];
             }
 
             $shipping = 30000;
-            
+
             $total = $subTotal + $shipping;
 
             return view('clients.donhangs.create', compact('carts', 'subTotal', 'shipping', 'total'));
@@ -57,21 +56,19 @@ class OrderController extends Controller
      */
     public function store(OrderRequest $request)
     {
-        // dd($request->all());
-        if($request->isMethod('POST')){
+        if ($request->isMethod('POST')) {
             DB::beginTransaction();
 
-            try{
+            try {
                 $params = $request->except('_token');
                 $params['ma_don_hang'] = $this->generateUniqueOrderCode();
 
-                // dd($params);
                 $donHang = DonHang::query()->create($params);
                 $donHangId = $donHang->id;
 
                 $carts = session()->get('cart', []);
 
-                foreach($carts as $key => $item){
+                foreach ($carts as $key => $item) {
                     $thanhTien = $item['gia'] * $item['so_luong'];
 
                     $donHang->chiTietDonHang()->create([
@@ -85,16 +82,16 @@ class OrderController extends Controller
 
                 DB::commit();
 
-                // Khi thêm thành công sẽ tiến hành các công việc bên dưới này
-                // Trừ di số lượng của sản phẩm
+                // Khi thêm thành công sẽ thực hiện các công việc bên dưới này
+                // Trừ đi số lượng của sản phẩm
 
                 // Gửi mail khi đặt hàng thành công
-                Mail::to($donHang->email)->queue(new OrderConfirm($donHang));
+                Mail::to($donHang->email_nguoi_nhan)->queue(new OrderConfirm($donHang));
 
                 session()->put('cart', []);
 
                 return redirect()->route('donhangs.index')->with('success', 'Đơn hàng đã được tạo thành công!');
-            }catch(\Exception $e){
+            } catch (\Exception $e) {
                 DB::rollBack();
 
                 return redirect()->route('cart.list')->with('error', 'Có lỗi khi tạo đơn hàng. Vui lòng thử lại sau');
@@ -117,30 +114,22 @@ class OrderController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
     {
         $donHang = DonHang::query()->findOrFail($id);
+
         DB::beginTransaction();
 
         try {
-            if($request->has('huy_don_hang')){
+            if ($request->has('huy_don_hang')) {
                 $donHang->update(['trang_thai_don_hang' => DonHang::HUY_DON_HANG]);
-            }elseif($request->has('da_giao_hang')){
+            } elseif ($request->has('da_giao_hang')) {
                 $donHang->update(['trang_thai_don_hang' => DonHang::DA_GIAO_HANG]);
             }
 
             DB::commit();
-
         } catch (\Exception $e) {
             DB::rollBack();
         }
@@ -155,10 +144,11 @@ class OrderController extends Controller
         //
     }
 
-    function generateUniqueOrderCode (){
-        do{
+    function generateUniqueOrderCode()
+    {
+        do {
             $orderCode = 'ORD-' . Auth::id() . '-' . now()->timestamp;
-        }while(DonHang::where('ma_don_hang', $orderCode)->exists());
+        } while (DonHang::where('ma_don_hang', $orderCode)->exists());
 
         return $orderCode;
     }

@@ -15,7 +15,7 @@ class DonHang extends Model
         'dang_chuan_bi' => 'Đang chuẩn bị',
         'dang_van_chuyen' => 'Đang vận chuyển',
         'da_giao_hang' => 'Đã giao hàng',
-        'huy_don_hang' => 'Đơn hàng đã hủy',
+        'huy_don_hang' => 'Đơn hàng đã hủy'
     ];
 
     const TRANG_THAI_THANH_TOAN = [
@@ -36,16 +36,16 @@ class DonHang extends Model
     const HUY_DON_HANG = 'huy_don_hang';
 
     const CHUA_THANH_TOAN = 'chua_thanh_toan';
-
+    
     const DA_THANH_TOAN = 'da_thanh_toan';
 
     protected $fillable = [
         'ma_don_hang',
         'user_id',
         'ten_nguoi_nhan',
-        'email',
-        'so_dien_thoai',
-        'dia_chi',
+        'email_nguoi_nhan',
+        'so_dien_thoai_nguoi_nhan',
+        'dia_chi_nguoi_nhan',
         'ghi_chu',
         'trang_thai_don_hang',
         'trang_thai_thanh_toan',
@@ -54,11 +54,11 @@ class DonHang extends Model
         'tong_tien',
     ];
 
-    public function user(){
+    public function user() {
         return $this->belongsTo(User::class);
     }
 
-    public function chiTietDonHang(){
+    public function chiTietDonHang() {
         return $this->hasMany(ChiTietDonHang::class);
     }
 }
